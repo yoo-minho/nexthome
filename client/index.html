@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Kakao 지도 시작하기</title>
+</head>
+<body>
+<div id="map" style="width:500px;height:400px;"></div>
+<div id="clickLatlng"></div>
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=b9c3d047346af9fad00abfbfb12bc2d8"></script>
+<script>
+    const {LatLng, Map, Marker, event} = kakao.maps;
+
+    window.onload = async e => {
+        const container = document.getElementById('map');
+        const options = {
+            center: new LatLng(...await getCoordinates()),
+            level: 4
+        };
+
+        const map = new Map(container, options);
+
+        // 지도를 클릭한 위치에 표출할 마커입니다
+        const position = map.getCenter();
+        const marker = new Marker({position});
+        marker.setMap(map);
+        renderMarkerInfo(position.Ma, position.La);
+
+        event.addListener(map, 'click', function (mouseEvent) {
+            var latlng = mouseEvent.latLng;
+            marker.setPosition(latlng);
+            map.panTo(new LatLng(latlng.getLat(), latlng.getLng()));
+            renderMarkerInfo(latlng.getLat(), latlng.getLng());
+        });
+
+        function renderMarkerInfo(lat, lng) {
+            var resultDiv = document.getElementById('clickLatlng');
+            resultDiv.innerHTML = `위도 : ${lat}, 경도 : ${lng}`;
+        }
+    }
+
+    function getCoordinates() {
+        return new Promise(function (resolve, reject) {
+            if (!navigator.geolocation) {
+                resolve([33.450701, 126.570667])
+                return;
+            }
+            navigator.geolocation.watchPosition(position => {
+                resolve([position.coords.latitude, position.coords.longitude])
+            }, reject, {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 5000
+            });
+        });
+    }
+
+</script>
+</body>
+</html>
